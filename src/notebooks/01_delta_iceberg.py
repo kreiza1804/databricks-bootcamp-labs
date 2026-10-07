@@ -68,14 +68,18 @@
 # MAGIC SELECT order_id, customer_id, amount, 'completed' AS status FROM orders_silver;
 # MAGIC
 # MAGIC CREATE TABLE IF NOT EXISTS refunds (order_id BIGINT, refunded_at TIMESTAMP, amount DECIMAL(12, 2));
+# MAGIC
+# MAGIC -- Enable catalog commits for multi-statement transaction support
+# MAGIC ALTER TABLE orders_status SET TBLPROPERTIES ('delta.feature.catalogManaged' = 'supported');
+# MAGIC ALTER TABLE refunds SET TBLPROPERTIES ('delta.feature.catalogManaged' = 'supported');
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC BEGIN TRANSACTION;
-# MAGIC UPDATE orders_status SET status = 'refunded' WHERE order_id = 1;
-# MAGIC INSERT INTO refunds SELECT order_id, current_timestamp(), amount FROM orders_status WHERE order_id = 1;
-# MAGIC COMMIT;
+# MAGIC BEGIN ATOMIC
+# MAGIC   UPDATE orders_status SET status = 'refunded' WHERE order_id = 1;
+# MAGIC   INSERT INTO refunds SELECT order_id, current_timestamp(), amount FROM orders_status WHERE order_id = 1;
+# MAGIC END;
 
 # COMMAND ----------
 

@@ -19,24 +19,25 @@ resources:
 
 # The real-time endpoint needs a registered model version, so it is declared for
 # dev only. In staging/prod, add it after the first training run (lab 06 stretch).
-targets:
-  dev:
-    resources:
-      model_serving_endpoints:
-        churn_endpoint:
-          name: churn-endpoint          # dev mode prefixes it: dev_<you>_churn-endpoint
-          config:
-            served_entities:
-              - entity_name: ${var.catalog}.${resources.schemas.sales.name}.churn_model
-                entity_version: ${var.churn_model_version}
-                workload_size: Small
-                scale_to_zero_enabled: true
-          ai_gateway:
-            inference_table_config:
-              enabled: true
-              catalog_name: ${var.catalog}
-              schema_name: ${resources.schemas.sales.name}
-              table_name_prefix: churn_endpoint
-          tags:
-            - key: project
-              value: bootcamp
+# Uncomment this block after completing lab 04 (ML training) to deploy the endpoint.
+# targets:
+#   dev:
+#     resources:
+#       model_serving_endpoints:
+#         churn_endpoint:
+#           name: churn-endpoint          # dev mode prefixes it: dev_<you>_churn-endpoint
+#           config:
+#             served_entities:
+#               - entity_name: ${var.catalog}.${resources.schemas.sales.name}.churn_model
+#                 entity_version: ${var.churn_model_version}
+#                 workload_size: Small
+#                 scale_to_zero_enabled: true
+#           ai_gateway:
+#             inference_table_config:
+#               enabled: true
+#               catalog_name: ${var.catalog}
+#               schema_name: ${resources.schemas.sales.name}
+#               table_name_prefix: churn_endpoint
+#           tags:
+#             - key: project
+#               value: bootcamp
