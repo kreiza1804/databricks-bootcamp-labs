@@ -48,14 +48,38 @@ Could not create catalogs in this workspace.
 
 # COMMAND ----------
 
-# MAGIC %md ## 2 · Groups for the governance lab (created in the UI, checked here)
+# MAGIC %md ## 2 · Groups for the governance lab (create in the **account console**, not the workspace UI)
+# MAGIC
+# MAGIC Workspace-local groups (created from Settings → Identity and access → Groups) are **invisible to Unity Catalog**.
+# MAGIC Create the groups in the [account console](https://accounts.cloud.databricks.com) instead:
+# MAGIC
+# MAGIC 1. **User Management → Groups → Add group** → create `bootcamp_analysts` and `bootcamp_engineers`
+# MAGIC 2. **Workspaces → your workspace → Permissions** → add both groups to the workspace
+# MAGIC 3. Add yourself as a member of `bootcamp_engineers`
+# MAGIC
+# MAGIC The cell below checks that the groups exist **and** are account-level (`type=Group`).
 
 # COMMAND ----------
 
+# DBTITLE 1,Check groups are account-level
 wanted = ["bootcamp_engineers", "bootcamp_analysts"]
-existing = {g.display_name for g in w.groups.list(attributes="displayName")}
-for g in wanted:
-    print(f"{g:20} {'ok' if g in existing else 'MISSING → Settings → Identity and access → Groups → Add group'}")
+me = w.current_user.me()
+
+print("Checking groups for the governance lab:\n")
+for name in wanted:
+    matches = [g for g in w.groups.list() if g.display_name == name]
+    if not matches:
+        print(f"  {name:20} MISSING → create it in the account console (accounts.cloud.databricks.com)")
+        continue
+    for g in matches:
+        rt = g.meta.resource_type if g.meta else "unknown"
+        if rt == "Group":
+            in_eng = any(m.display == me.user_name for m in (g.members or []))
+            extra = " (you are a member)" if in_eng else ""
+            print(f"  {name:20} ok (account-level, id={g.id}){extra}")
+        else:
+            print(f"  {name:20} WARNING: workspace-local group (type={rt}) — UC cannot see it!")
+            print(f"  {'':20}   Delete it and recreate in the account console as an account-level group.")
 
 # COMMAND ----------
 
