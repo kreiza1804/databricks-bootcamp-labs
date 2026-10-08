@@ -1,4 +1,8 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # MAGIC %md
 # MAGIC # Lab 03 · Delta Lake & managed Iceberg
 # MAGIC Prerequisite: the `orders_pipeline` from lab 01 has run at least once.
@@ -26,6 +30,10 @@
 # MAGIC COMMENT 'Customer profiles (Delta) — governed in lab 02'
 # MAGIC AS SELECT customer_id, first_name, last_name, email, region, segment, to_date(signup_date) AS signup_date
 # MAGIC FROM customers;
+# MAGIC
+# MAGIC -- Remove any column mask applied by a prior governance run
+# MAGIC -- (time travel / RESTORE is not supported on tables with column masks)
+# MAGIC ALTER TABLE customer_profiles ALTER COLUMN email DROP MASK;
 # MAGIC
 # MAGIC CREATE OR REPLACE TABLE orders_iceberg
 # MAGIC USING ICEBERG
